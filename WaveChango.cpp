@@ -22,7 +22,7 @@ WaveChango::WaveChango(Mahalo *M){
     s->Add(b);
 
   }
-  
+ 
   m->setSampleSource(s); 
 
 }

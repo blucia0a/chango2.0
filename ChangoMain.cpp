@@ -235,20 +235,31 @@ void tune(int which, float freq){
   }
 }
 
+void *audioThreadStart(void*mp){
+  Mahalo *m = (Mahalo*)mp;
+  while(true){
+    if(m->initialized){
+    }
+  }
+}
 
 int main(int argc, char *argv[]){
 
-    
+  pthread_t audiothread;
+   
   fprintf(stderr,"Chango - Brandon Lucia 2011-2018 - Audiolyze the world! [https://brandonlucia.com]\n");
   if( argc >= 2 ){
     useMotion = true;
   }
- 
-  Mahalo *m = new Mahalo();
 
+  /*Start a thread that handles audio processing*/ 
+  Mahalo *m = new Mahalo();
   m->setup();
   m->sstart();
-        
+  //pthread_create(&audiothread,NULL,audioThreadStart,(void*)m);
+  m->step_mainloop();
+
+ 
   camera = cvCreateCameraCapture (CV_CAP_ANY);
   cvNamedWindow(WINDOW_NAME_STR,CV_WINDOW_NORMAL);
  
@@ -289,8 +300,7 @@ int main(int argc, char *argv[]){
       delete c;
       
     }
-    
-    
+   
     handleKey();
     
   }

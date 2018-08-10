@@ -1,9 +1,9 @@
 GXX=g++
 GCC=gcc
 
-CFLAGS+= $(INCLUDES) -g -fPIC -O3  
-CXXFLAGS+= $(INCLUDES) -g -fPIC -O3  
-LDFLAGS+= -L/usr/lib/x86_64-linux-gnu -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio -lopencv_ml -lopencv_video -lopencv_features2d -lopencv_calib3d -lopencv_objdetect -lopencv_stitching
+CFLAGS+= $(INCLUDES) -g -fPIC -O3 -pthread 
+CXXFLAGS+= $(INCLUDES) -g -fPIC -O3  -pthread
+LDFLAGS+= -L/usr/lib/x86_64-linux-gnu -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_videoio -lopencv_ml -lopencv_video -lopencv_features2d -lopencv_calib3d -lopencv_objdetect -lopencv_stitching -pthread -lpulse
 
 TARGET= chango
 SRCS := $(wildcard *.cpp)
