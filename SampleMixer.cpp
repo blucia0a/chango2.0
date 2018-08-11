@@ -8,6 +8,7 @@
  */
 
 #include "SampleMixer.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 SampleMixer::SampleMixer(){
@@ -34,6 +35,7 @@ void SampleMixer::Mix(int numSources, SampleSource **srcs, float *out){
 
         out[0] *= this->amp;
         out[1] *= this->amp;
+	//fprintf(stderr,"sample was %f %f\n",out[0],out[1]);
 
 }
 

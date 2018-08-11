@@ -45,7 +45,7 @@ public:
 
   pa_context *context;
   pa_stream *stream;
-  pa_mainloop *pml;
+  pa_threaded_mainloop *pml;
   pa_mainloop_api *mainloop_api;
 
   void *buffer;

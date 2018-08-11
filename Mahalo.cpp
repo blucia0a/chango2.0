@@ -170,7 +170,7 @@ bool Mahalo::sstop(){
   static void stream_write_callback(pa_stream *s, size_t length, void *userdata) {
 
 
-    fprintf(stderr,"trying to write some data\n");
+    //fprintf(stderr,"trying to write some data\n");
     /*Check basic stream properties*/
     assert(s);
     assert(length > 0);
@@ -186,23 +186,28 @@ bool Mahalo::sstop(){
     
 
     Mahalo *def = (Mahalo*)userdata; 
-    float *out = (float *)audiobuffer;
+    int16_t *out = (int16_t *)audiobuffer;
     int i;
-    int numSamples = len / (pa_frame_size(&(def->sample_spec)));
 
+    /*number of bytes divided by 2 is number of 16 bit samples*/
+    int numSamples = len / 2;//(pa_frame_size(&(def->sample_spec)));
+    
 
     assert(def);
     assert(def->src);
     assert(out);
     assert(numSamples > 0);
-    
-    
-    for (i=0; i<numSamples; ++i) {
+   
+    /*Putting 2 16 bit samples per iteration*/ 
+    float fout[2] = {0.0, 0.0};
+    for (i=0; i<numSamples; i = i+2) {
         
       if( def != NULL && def->src != NULL ){
 
-        def->src->getNextSample(out);
-        
+        def->src->getNextSample(fout);
+	out[0] = (int16_t)( (fout[0]+1.0) * 32768.0 - 32768.0);
+	out[1] = (int16_t)( (fout[1]+1.0) * 32768.0 - 32768.0);
+        //fprintf(stderr,"%f (%d) %f (%d) ",fout[0],out[0],fout[1],out[1]);
 
       }else{
 
@@ -211,14 +216,14 @@ bool Mahalo::sstop(){
 
       }
       
-      out[0] = out[0] * (1.0f - (float)def->panz);
-      out[1] = out[1] * (float)def->panz;
+      /*out[0] = out[0] * (1.0f - (float)def->panz);
+      out[1] = out[1] * (float)def->panz;*/
       
       //move the output pointer ahead in the hardware buffer
       out++; out++;
       
       //update the zippered pan value
-      def->panz  = 0.001 * def->pan  + 0.999 * def->panz;
+      //def->panz  = 0.001 * def->pan  + 0.999 * def->panz;
         
     }
 
@@ -228,7 +233,7 @@ bool Mahalo::sstop(){
         return;
     }
     
-    fprintf(stderr,"done writing the data\n");
+    //fprintf(stderr,"done writing the data\n");
 
 }
 
@@ -443,7 +448,7 @@ fail:
 
     sample_spec = {
       /*Default: 44kHz stereo 16 bit signed little endian audio data*/
-      .format = PA_SAMPLE_FLOAT32LE,
+      .format = PA_SAMPLE_S16LE,
       .rate = 44100,
       .channels = 2
     };
@@ -464,7 +469,7 @@ fail:
   void Mahalo::setup(){
 
 
-    pa_mainloop *m;
+    pa_threaded_mainloop *m;
     int ret = 1, r, c;
     char *bn, *server = NULL;
     pa_time_event *time_event = NULL;
@@ -484,12 +489,12 @@ fail:
     stream_name = pa_xstrdup("Chango");
     
     /* Set up a new main loop */
-    if (!(m = pa_mainloop_new())) {
+    if (!(m = pa_threaded_mainloop_new())) {
         fprintf(stderr, "pa_mainloop_new() failed.\n");
         quit(-1);
     }
     this->pml = m;
-    mainloop_api = pa_mainloop_get_api(m);
+    mainloop_api = pa_threaded_mainloop_get_api(m);
   
     /*Set up crash / signal handles*/  
     r = pa_signal_init(mainloop_api);
@@ -534,13 +539,13 @@ fail:
   }
 
   float Mahalo::getRate(){
-    return 0;
+    return 44100.0;
   }
 
   void Mahalo::step_mainloop(){
 
     int ret = 1;
-    if (pa_mainloop_run(this->pml, &ret) < 0) {
+    if (pa_threaded_mainloop_start(this->pml) < 0) {
         fprintf(stderr, "pa_mainloop_run() failed.\n");
         exit(1);
     }
